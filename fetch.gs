@@ -10,6 +10,10 @@ importBuffer();
 importGasShims();
 importGasShams()
 
+globalThis.ReadableSham = Object.setPrototypeOf(function ReadableSham(uint8array){
+  return Object.setPrototypeOf([uint8array].values(),ReadbleSham.prototype);
+},[].values().__proto__);
+
 function syncRes(res){
   res.bytes = function bytes(){return new Uint8Array(this['&bytes']);};
   res.arrayBuffer=function arrayBuffer(){return this.bytes().buffer;};
