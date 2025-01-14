@@ -11,7 +11,9 @@ importGasShims();
 importGasShams()
 
 globalThis.ReadableSham = Object.setPrototypeOf(function ReadableSham(uint8array){
-  return Object.setPrototypeOf([uint8array].values(),ReadbleSham.prototype);
+  const rs = Object.setPrototypeOf([uint8array].values(),ReadbleSham.prototype);
+  rs.locked = false;
+  return rs;
 },[].values().__proto__);
 
 function syncRes(res){
