@@ -98,7 +98,7 @@ function importWhatWgFetch() {
             return iterator
         }
 
-        function Headers(headers) {
+        globalThis.Headers = function Headers(headers) {
             this.map = {};
 
             if (headers instanceof Headers) {
@@ -234,7 +234,7 @@ function importWhatWgFetch() {
             }
         }
 
-        function Body() {
+        globalThis.Body = function Body() {
             this.bodyUsed = false;
 
             this._initBody = function _initBody(body) {
@@ -362,7 +362,7 @@ function importWhatWgFetch() {
             return methods.indexOf(upcased) > -1 ? upcased : method
         }
 
-        function Request(input, options) {
+        globalThis.Request = function Request(input, options) {
             if (!(this instanceof Request)) {
                 throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.')
             }
@@ -477,7 +477,7 @@ function importWhatWgFetch() {
 
         Body.call(Request.prototype);
 
-        function Response(bodyInit, options) {
+        globalThis.Response = function Response(bodyInit, options) {
             if (!(this instanceof Response)) {
                 throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.')
             }
