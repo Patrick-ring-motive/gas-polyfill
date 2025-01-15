@@ -10,28 +10,74 @@ importBuffer();
 importGasShims();
 importGasShams();
 
-function Promish(){
-}
-Promish.prototype.then = function then(fn){
-  return fn();
+function makeThenable(obj) {
+    if(obj['&thenable'])return obj
+    obj = Object(obj);
+    obj['&thenable'] = true;
+    obj['&value'] = value;
+    obj['&error'] = null;
+    obj['&hasError'] = false;
+
+  obj.then = obj.then ?? function then(onFulfilled, onRejected) {
+    try {
+      if (!this['&hasError']) {
+        const result = onFulfilled(this['&value']);
+        return result?.['&thenable'] ? result : makeThenable(result);
+      }
+    } catch (error) {
+      this['&error'] = error;
+      this['&hasError'] = true;
+      if (onRejected) {
+        return onRejected(error);
+      }
+    }
+    return this;
+  };
+
+  obj.catch = obj.catch ?? function _catch(onRejected) {
+    if (this['&hasError'] && onRejected) {
+      try {
+        const result = onRejected(this['&error']);
+        this['&hasError'] = false;
+        return result?.['&thenable'] ? result : makeThenable(result);
+      } catch (error) {
+        this['&error'] = error;
+        return this;
+      }
+    }
+    return this;
+  };
+
+  obj.finally = obj.finally ?? function _finally(onFinally) {
+    if (onFinally) {
+      try {
+        onFinally();
+      } catch (error) {
+        this['&error'] = error;
+        this['&hasError'] = true;
+      }
+    }
+    return this;
+  };
+  return obj;
 };
 function ReadableShamReader(){}
 ReadableShamReader.prototype.cancel = function cancel(){};
 ReadableShamReader.prototype.releaseLock = function releaseLock(){};
-ReadableShamReader.prototype.read = function read(){return this['&stream'].next();};
+ReadableShamReader.prototype.read = function read(){return makeThenable(this['&stream'].next());};
 globalThis.ReadableSham = Object.setPrototypeOf(function ReadableSham(uint8Array){
   const rs = Object.setPrototypeOf([uint8Array].values(),ReadbleSham.prototype);
   rs.locked = false;
   rs['&uint8Array'] = uint8Array;
-  return rs;
+  return makeThenable(rs);
 },[].values().__proto__);
 
-ReadableSham.prototype.cancel = function cancel(){};
+ReadableSham.prototype.cancel = function cancel(){return makeThenable()};
 ReadableSham.prototype.tee = function tee(){
-  return [
+  return makeThenable([
     ReadableSham(this['&uint8Array']),
     ReadableSham(this['&uint8Array'])
-  ];
+  ]);
 };
 ReadableSham.prototype.getReader = function getReader(){
    const reader = new ReadableShamReader();
@@ -41,12 +87,12 @@ ReadableSham.prototype.getReader = function getReader(){
 };
 
 function syncRes(res){
-  res.bytes = function bytes(){return new Uint8Array(this['&bytes']);};
-  res.arrayBuffer=function arrayBuffer(){return this.bytes().buffer;};
+  res.bytes = function bytes(){return makeThenable(new Uint8Array(this['&bytes']));};
+  res.arrayBuffer = function arrayBuffer(){return makeThenable(this.bytes().buffer);};
   const decoder = new TextDecoder();
-  res.text = function text(){return decoder.decode(this.bytes());};
-  res.blob = function blob(){return new Blob(this.bytes());};
-  res.json = function json(){return JSON.parse(res.text());};
+  res.text = function text(){return makeThenable(decoder.decode(this.bytes()));};
+  res.blob = function blob(){return makeThenable(new Blob(this.bytes()));};
+  res.json = function json(){return makeThenable(JSON.parse(res.text()));};
   res.clone = function clone(){
     const cloneRes = new Response(this.bytes(),this);
     cloneRes['&bytes'] = [...this.bytes()];
@@ -54,11 +100,11 @@ function syncRes(res){
   };
   Object.defineProperty(res, "body", {
     get() {
-      return[this.bytes()].values();
+      return ReadableSham(this.bytes());
     },
     set() {}
   });
-  return res;
+  return makeThenable(res);
 }
 
 globalThis.fetch = function fetch(url,options){
