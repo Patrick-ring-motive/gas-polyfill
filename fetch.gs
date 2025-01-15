@@ -30,6 +30,7 @@ ReadableSham.prototype.tee = function tee(){
 ReadableSham.prototype.getReader = function getReader(){
    const reader = new ReadableShamReader();
    reader['&stream'] = this;
+   reader.closed = false;
    return reader;
 };
 
