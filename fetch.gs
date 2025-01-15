@@ -10,6 +10,9 @@ importBuffer();
 importGasShims();
 importGasShams()
 
+function ReadableShamReader(){}
+ReadableShamReader.prototype.cancel = function cancel(){};
+ReadableShamReader.prototype.read = function read(){return this['&stream'].next();};
 globalThis.ReadableSham = Object.setPrototypeOf(function ReadableSham(uint8Array){
   const rs = Object.setPrototypeOf([uint8Array].values(),ReadbleSham.prototype);
   rs.locked = false;
