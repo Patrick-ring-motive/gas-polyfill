@@ -47,6 +47,7 @@ function makeThenable(obj) {
     }
     return this;
   };
+  Object.defineProperty(obj.catch,'name',{value:'catch'});
 
   obj.finally = obj.finally ?? function _finally(onFinally) {
     if (onFinally) {
@@ -59,14 +60,21 @@ function makeThenable(obj) {
     }
     return this;
   };
+  Object.defineProperty(obj.finally,'name',{value:'finally'});
   return obj;
-};
+}
+
 function ReadableShamReader(){}
 ReadableShamReader.prototype.cancel = function cancel(){};
 ReadableShamReader.prototype.releaseLock = function releaseLock(){};
 ReadableShamReader.prototype.read = function read(){return makeThenable(this['&stream'].next());};
 globalThis.ReadableSham = Object.setPrototypeOf(function ReadableSham(uint8Array){
   const rs = Object.setPrototypeOf([uint8Array].values(),ReadbleSham.prototype);
+  const $then = Symbol('*next');
+  rs[$then] = rs.next;
+  rs.then = function next(){
+    return makeThenable(this[$then](...arguments));
+  };
   rs.locked = false;
   rs['&uint8Array'] = uint8Array;
   return makeThenable(rs);
