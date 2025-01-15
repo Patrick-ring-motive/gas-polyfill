@@ -8,8 +8,13 @@ importWhatWgFetch();
 importTextEncoding();
 importBuffer();
 importGasShims();
-importGasShams()
+importGasShams();
 
+function Promish(){
+}
+Promish.prototype.then = function then(fn){
+  return fn();
+};
 function ReadableShamReader(){}
 ReadableShamReader.prototype.cancel = function cancel(){};
 ReadableShamReader.prototype.releaseLock = function releaseLock(){};
