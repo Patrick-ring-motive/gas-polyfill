@@ -27,6 +27,11 @@ ReadableSham.prototype.tee = function tee(){
     ReadableSham(this['&uint8Array'])
   ];
 };
+ReadableSham.prototype.getReader = function getReader(){
+   const reader = new ReadableShamReader();
+   reader['&stream'] = this;
+   return reader;
+};
 
 function syncRes(res){
   res.bytes = function bytes(){return new Uint8Array(this['&bytes']);};
