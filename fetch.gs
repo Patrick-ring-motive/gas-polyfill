@@ -99,7 +99,7 @@ function syncRes(res){
   res.arrayBuffer = function arrayBuffer(){return makeThenable(this.bytes().buffer);};
   const decoder = new TextDecoder();
   res.text = function text(){return makeThenable(decoder.decode(this.bytes()));};
-  res.blob = function blob(){return makeThenable(new Blob(this.bytes()));};
+  res.blob = function blob(){return makeThenable(new Blob([this.bytes()]));};
   res.json = function json(){return makeThenable(JSON.parse(res.text()));};
   res.clone = function clone(){
     const cloneRes = new Response(this.bytes(),this);
